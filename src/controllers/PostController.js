@@ -1,19 +1,25 @@
 import { prisma } from "../prisma.js";
 
-class UserController {
+class PostController {
   async create(req, res) {
     try {
       const data = req.body;
+      const user = await prisma.user.findUnique({
+        where: { id: Number(data.authorId) },
+      });
+      if (!user) {
+        return res.status(404).json({ Message: "User not found" });
+      }
 
-      const user = await prisma.user.create({
+      const post = await prisma.post.create({
         data: {
-          email: data.email,
-          name: data.name,
-          password: data.password,
+          title: data.title,
+          content: data.content,
+          authorId: Number(data.authorId),
         },
       });
 
-      return res.status(201).json({ data: user });
+      return res.status(201).json({ data: post });
     } catch (error) {
       console.log(error);
       return res.status(500).json({ Message: "Internal error" });
@@ -22,7 +28,7 @@ class UserController {
 
   async get(req, res) {
     try {
-      const data = await prisma.user.findMany();
+      const data = await prisma.post.findMany();
       if (!data || data.length == 0) {
         return res.status(404).json({ Message: "Not Found" });
       }
@@ -36,7 +42,7 @@ class UserController {
   async show(req, res) {
     try {
       const { id } = req.params;
-      const data = await prisma.user.findUnique({
+      const data = await prisma.post.findUnique({
         where: {
           id: Number(id),
         },
@@ -51,38 +57,15 @@ class UserController {
     }
   }
 
-  async update(req, res) {
-    try {
-      const { id } = req.params;
-
-      const data = req.body;
-
-      const user = await prisma.user.update({
-        where: {
-          id: Number(id),
-        },
-        data: {
-          email: data.email,
-          name: data.name,
-        },
-      });
-
-      return res.status(200).json({ data: data });
-    } catch (error) {
-      console.log(error);
-      return res.status(500).json({ Message: "Internal error" });
-    }
-  }
-
   async delete(req, res) {
     try {
       const { id } = req.params;
-      const data = await prisma.user.delete({
+      await prisma.post.delete({
         where: {
           id: Number(id),
         },
       });
-      return res.status(200).json({ data: "User deleted succesfully" });
+      return res.status(200).json({ data: "Post deleted succesfully" });
     } catch (error) {
       console.log(error);
       return res.status(500).json({ Message: "Internal error" });
@@ -90,4 +73,4 @@ class UserController {
   }
 }
 
-export { UserController };
+export { PostController };
