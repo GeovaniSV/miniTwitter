@@ -4,16 +4,10 @@ class CommentController {
   async create(req, res) {
     try {
       const data = req.body;
-      const user = await prisma.user.findUnique({
-        where: { id: Number(data.authorId) },
-      });
 
       const post = await prisma.post.findUnique({
         where: { id: Number(data.postId) },
       });
-      if (!user) {
-        return res.status(404).json({ Message: "User not found" });
-      }
 
       if (!post) {
         return res.status(404).json({ Message: "Post not found" });
@@ -22,12 +16,31 @@ class CommentController {
       const comment = await prisma.comment.create({
         data: {
           content: data.content,
-          authorId: data.authorId,
           postId: data.postId,
         },
       });
 
       return res.status(201).json({ data: comment });
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ Message: "Internal error" });
+    }
+  }
+
+  async get(req, res) {
+    try {
+      const { id } = req.params;
+      const data = await prisma.comment.findMany({
+        where: {
+          postId: Number(id),
+        },
+      });
+
+      console.log(data);
+      if (!data || data.length == 0) {
+        return res.status(404).json({ Message: "Not Found" });
+      }
+      return res.status(200).json({ data: data });
     } catch (error) {
       console.log(error);
       return res.status(500).json({ Message: "Internal error" });
@@ -42,6 +55,7 @@ class CommentController {
           id: Number(id),
         },
       });
+      console.log(data);
       if (!data || data.length == 0) {
         return res.status(404).json({ Message: "Not Found" });
       }

@@ -7,6 +7,7 @@ const commentController = new CommentController();
 
 commentRouter.post("/comments", commentController.create);
 commentRouter.get("/comments/:id", commentController.show);
+commentRouter.get("/comments/post/:id", commentController.get);
 commentRouter.put("/comments/:id", commentController.update);
 commentRouter.delete("/comments/:id", commentController.delete);
 

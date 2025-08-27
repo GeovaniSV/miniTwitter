@@ -4,20 +4,14 @@ class PostController {
   async create(req, res) {
     try {
       const data = req.body;
-      const user = await prisma.user.findUnique({
-        where: { id: Number(data.authorId) },
-      });
-      if (!user) {
-        return res.status(404).json({ Message: "User not found" });
-      }
 
       const post = await prisma.post.create({
         data: {
-          title: data.title,
           content: data.content,
-          authorId: Number(data.authorId),
         },
       });
+
+      console.log(post);
 
       return res.status(201).json({ data: post });
     } catch (error) {
@@ -32,6 +26,7 @@ class PostController {
       if (!data || data.length == 0) {
         return res.status(404).json({ Message: "Not Found" });
       }
+      console.log(data);
       return res.status(200).json({ data: data });
     } catch (error) {
       console.log(error);
@@ -45,10 +40,6 @@ class PostController {
       const data = await prisma.post.findUnique({
         where: {
           id: Number(id),
-        },
-        include: {
-          author: true,
-          comments: true,
         },
       });
       if (!data || data.length == 0) {
@@ -64,6 +55,12 @@ class PostController {
   async delete(req, res) {
     try {
       const { id } = req.params;
+      await prisma.comment.deleteMany({
+        where: {
+          postId: Number(id),
+        },
+      });
+
       await prisma.post.delete({
         where: {
           id: Number(id),
